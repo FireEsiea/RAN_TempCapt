@@ -5,8 +5,10 @@
 #define BMP_MOSI 11 
 #define BMP_CS 10
 Adafruit_BMP280 bmp;
+int count = 0;
+#include <EEPROM.h>
 
-void setup() {
+void setup() {  
   // put your setup code here, to run once:
 Serial.begin(9600);
 Serial.println(F("BMP280 test"));
@@ -14,6 +16,10 @@ if(!bmp.begin()) {
   Serial.println(F("Could not find a valid BMP280 sensor, check wiring!"));
     while(1);
   }
+ for (int i = 0 ; i < EEPROM.length() ; i++) {
+    EEPROM.write(i, 0);
+  }
+
 }
 
 void loop() {
@@ -31,11 +37,29 @@ void loop() {
   Serial.println(" m");
   Serial.println();
 
+ 
+    analogWrite(2, 255);
   if ( temp > 29.00 ) {
     analogWrite(2, 255);
   } else if (temp < 29.00 ) {
     analogWrite(2, 0);
   
   }
-  delay(2000);
+
+  EEPROM.write(count, temp);
+  count++;
+  Serial.println(count);
+  
+  delay(100);
+
+  if (count == 50) {
+    Serial.println(F("Voici toutes les températures enregistrées :"));
+    for (int i = 0; i < 51; i++){
+      byte valeur = EEPROM.read(i);
+      Serial.println(valeur);
+    }
+    count = 0;
+    
+  }
+
 }
